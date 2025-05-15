@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recipe Recommendations</title>
+    <style>
+        .recipe {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            gap: 20px;
+        }
+        .recipe-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .recipe-info {
+            flex: 1;
+        }
+        .ingredients {
+            color: #666;
+            margin: 10px 0;
+        }
+        .description {
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <h1>Recommended Recipes</h1>
+    {% if not recommendations.empty %}
+        {% for _, row in recommendations.iterrows() %}
+            <div class="recipe">
+                {% if row['thumbnail_url'] %}
+                    <img src="{{ row['thumbnail_url'] }}" alt="{{ row['name'] }}" class="recipe-image">
+                {% endif %}
+                <div class="recipe-info">
+                    <h2>{{ row['name'] }}</h2>
+                    <p class="ingredients"><strong>Ingredients:</strong> {{ row['ingredients'] }}</p>
+                    {% if row['description'] %}
+                        <p class="description">{{ row['description'] }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No recipes found. Try different ingredients!</p>
+    {% endif %}
+    <a href="/">Back to search</a>
+</body>
+</html>
+
