@@ -1,56 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Recipe Recommendations</title>
+    <title>Recipe Results</title>
     <style>
-        .recipe {
-            display: flex;
-            align-items: center;
-            margin: 20px 0;
-            padding: 20px;
-            background: #f8f8f8;
-            border-radius: 8px;
-            gap: 20px;
-        }
-        .recipe-image {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .recipe-info {
-            flex: 1;
-        }
-        .ingredients {
-            color: #666;
-            margin: 10px 0;
-        }
-        .description {
-            color: #444;
-        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f6f6; margin: 0; }
+        .container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 16px #0001; padding: 32px; }
+        h1 { color: #4CAF50; }
+        .recipe-list { margin: 0; padding: 0; list-style: none; }
+        .recipe-item { display: flex; align-items: center; padding: 20px 0; border-bottom: 1px solid #eee; }
+        .recipe-image { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-right: 24px; }
+        .recipe-info { flex: 1; }
+        .recipe-name { font-size: 1.2rem; margin: 0 0 6px 0; }
+        .ingredients { color: #666; margin-bottom: 6px; }
+        .pagination { margin-top: 24px; text-align: center; }
+        .pagination button { margin: 0 4px; padding: 8px 16px; border: none; background: #4CAF50; color: #fff; border-radius: 4px; cursor: pointer; }
+        .pagination button.active { background: #388e3c; }
     </style>
+    <script>
+        // Enkel paginering med JavaScript (visar 1 recept i taget)
+        let currentPage = 0;
+        function showPage(page) {
+            const items = document.querySelectorAll('.recipe-item');
+            items.forEach((item, idx) => {
+                item.style.display = (idx === page) ? 'flex' : 'none';
+            });
+            document.querySelectorAll('.pagination button').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === page);
+            });
+            currentPage = page;
+        }
+        window.onload = function() {
+            showPage(0);
+        }
+    </script>
 </head>
 <body>
-    <h1>Recommended Recipes</h1>
-    {% if not recommendations.empty %}
-        {% for _, row in recommendations.iterrows() %}
-            <div class="recipe">
+    <div class="container">
+        <h1>Top 10 recipes with these ingredients:</h1>
+        <ul class="recipe-list">
+            {% for _, row in recommendations.iterrows() %}
+            <li class="recipe-item">
                 {% if row['thumbnail_url'] %}
-                    <img src="{{ row['thumbnail_url'] }}" alt="{{ row['name'] }}" class="recipe-image">
+                    <img src="{{ row['thumbnail_url'] }}" class="recipe-image" alt="{{ row['name'] }}">
                 {% endif %}
                 <div class="recipe-info">
-                    <h2>{{ row['name'] }}</h2>
-                    <p class="ingredients"><strong>Ingredients:</strong> {{ row['ingredients'] }}</p>
+                    <div class="recipe-name">{{ row['name'] }}</div>
+                    <div class="ingredients"><strong>Ingredients:</strong> {{ row['ingredients'] }}</div>
                     {% if row['description'] %}
-                        <p class="description">{{ row['description'] }}</p>
+                        <div class="description">{{ row['description'] }}</div>
                     {% endif %}
                 </div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No recipes found. Try different ingredients!</p>
-    {% endif %}
-    <a href="/">Back to search</a>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="pagination">
+            {% for idx in range(recommendations.shape[0]) %}
+                <button onclick="showPage({{ idx }})">{{ idx+1 }}</button>
+            {% endfor %}
+        </div>
+        <a href="/">Back to search</a>
+    </div>
 </body>
 </html>
-

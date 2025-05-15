@@ -3,18 +3,29 @@
 <head>
     <title>Recipe Recommender</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; }
-        input[type="text"] { width: 400px; padding: 10px; }
-        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f6f6; margin: 0; }
+        .container { max-width: 600px; margin: 60px auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 16px #0001; padding: 40px; }
+        h1 { color: #4CAF50; }
+        .input-row { display: flex; gap: 10px; }
+        input[type="text"] { flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #ccc; }
+        button { padding: 12px 24px; border: none; border-radius: 4px; background: #4CAF50; color: #fff; font-size: 1rem; cursor: pointer; }
+        button:hover { background: #388e3c; }
+        .info { color: #666; margin-top: 16px; }
     </style>
 </head>
 <body>
-    <h1>Recipe Recommender</h1>
-    <form method="POST">
-        <input type="text" name="ingredients" placeholder="e.g., chicken, rice, soy sauce" required>
-        <button type="submit">Find Recipes</button>
-    </form>
+    <div class="container">
+        <h1>Recipe Recommender</h1>
+        <form method="POST">
+            <div class="input-row">
+                <input type="text" name="ingredients" placeholder="e.g., chicken, rice, soy sauce" required>
+                <button type="submit">Find Recipes</button>
+            </div>
+        </form>
+        <div class="info">
+            Enter ingredients separated by commas. <br>
+            <strong>Example:</strong> chicken, rice, soy sauce
+        </div>
+    </div>
 </body>
 </html>
-
-
