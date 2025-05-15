@@ -3,6 +3,9 @@ import pandas as pd
 import joblib
 from sklearn.metrics.pairwise import cosine_similarity
 import os
+# Add to top of app.py to check versions
+import sklearn
+print(f"scikit-learn version: {sklearn.__version__}")
 
 app = Flask(__name__)
 
@@ -17,17 +20,42 @@ try:
     df = pd.read_csv(DATA_PATH)
     tfidf = joblib.load(TFIDF_MODEL_PATH)
     tfidf_matrix = joblib.load(TFIDF_MATRIX_PATH)
+    
+    # Add these debug lines
+    print(f"Model path: {TFIDF_MODEL_PATH}")
+    print(f"Matrix path: {TFIDF_MATRIX_PATH}")
+    print(f"IDF vector exists: {hasattr(tfidf, 'idf_')}")
+    print(f"TF-IDF type: {type(tfidf).__name__}")
+    print(f"Matrix shape: {tfidf_matrix.shape}")
+    
 except Exception as e:
-    print(f"Fel vid inläsning: {e}")
+    print(f"Error loading models: {e}")
     exit()
+
 
 # Rekommendationsfunktion
 def get_recommendations(query, top_n=10):
-    processed_query = ' '.join(query.lower().replace(',', ' ').split())
-    query_vec = tfidf.transform([processed_query])
-    sim_scores = cosine_similarity(query_vec, tfidf_matrix).flatten()
-    top_indices = sim_scores.argsort()[-top_n:][::-1]
-    return df.iloc[top_indices][['name', 'ingredients', 'description', 'thumbnail_url']].fillna("")
+    try:
+        # Clean the query text
+        processed_query = ' '.join(query.lower().replace(',', ' ').split())
+        
+        # Verify TF-IDF vectorizer status
+        print(f"Before transform - IDF vector exists: {hasattr(tfidf, 'idf_')}")
+        
+        # Transform the query
+        query_vec = tfidf.transform([processed_query])
+        
+        # Calculate similarity
+        sim_scores = cosine_similarity(query_vec, tfidf_matrix).flatten()
+        top_indices = sim_scores.argsort()[-top_n:][::-1]
+        
+        # Return results
+        return df.iloc[top_indices][['name', 'ingredients', 'description', 'thumbnail_url']].fillna("")
+    except Exception as e:
+        print(f"Error in get_recommendations: {e}")
+        # Return empty DataFrame with correct columns as fallback
+        return pd.DataFrame(columns=['name', 'ingredients', 'description', 'thumbnail_url'])
+
 
 # Routes
 @app.route('/', methods=['GET', 'POST'])
