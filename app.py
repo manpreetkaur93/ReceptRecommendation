@@ -1,69 +1,71 @@
 from flask import Flask, request, render_template
 import pandas as pd
+import json
 import joblib
 from sklearn.metrics.pairwise import cosine_similarity
 import os
-# Add to top of app.py to check versions
-import sklearn
-print(f"scikit-learn version: {sklearn.__version__}")
 
 app = Flask(__name__)
 
-# Sökvägar
+# Load data and models
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(BASE_DIR, "recipes_with_ingredients_and_tags.csv")
+INSTRUCTIONS_PATH = os.path.join(BASE_DIR, "ingredient_and_instructions.json")
 TFIDF_MODEL_PATH = os.path.join(BASE_DIR, "models", "tfidf_model.pkl")
 TFIDF_MATRIX_PATH = os.path.join(BASE_DIR, "models", "tfidf_matrix.pkl")
 
-# Ladda data och modeller
 try:
+    # Load recipe data
     df = pd.read_csv(DATA_PATH)
+    
+    # Load instructions data
+    with open(INSTRUCTIONS_PATH, 'r', encoding='utf-8') as f:
+        instructions_data = json.load(f)
+    
+    # Load models
     tfidf = joblib.load(TFIDF_MODEL_PATH)
     tfidf_matrix = joblib.load(TFIDF_MATRIX_PATH)
-    
-    # Add these debug lines
-    print(f"Model path: {TFIDF_MODEL_PATH}")
-    print(f"Matrix path: {TFIDF_MATRIX_PATH}")
-    print(f"IDF vector exists: {hasattr(tfidf, 'idf_')}")
-    print(f"TF-IDF type: {type(tfidf).__name__}")
-    print(f"Matrix shape: {tfidf_matrix.shape}")
-    
+    print("Data and models loaded successfully")
 except Exception as e:
-    print(f"Error loading models: {e}")
+    print(f"Error loading data or models: {e}")
     exit()
 
+def get_recipe_instructions(slug):
+    """Get instructions for a recipe by slug, returns a list of strings."""
+    if slug in instructions_data:
+        steps = instructions_data[slug].get("instructions", [])
+        # Extract only the display_text from each step dict
+        return [step["display_text"] for step in steps if "display_text" in step]
+    return None
 
-# Rekommendationsfunktion
 def get_recommendations(query, top_n=10):
-    try:
-        # Clean the query text
-        processed_query = ' '.join(query.lower().replace(',', ' ').split())
-        
-        # Verify TF-IDF vectorizer status
-        print(f"Before transform - IDF vector exists: {hasattr(tfidf, 'idf_')}")
-        
-        # Transform the query
-        query_vec = tfidf.transform([processed_query])
-        
-        # Calculate similarity
-        sim_scores = cosine_similarity(query_vec, tfidf_matrix).flatten()
-        top_indices = sim_scores.argsort()[-top_n:][::-1]
-        
-        # Return results
-        return df.iloc[top_indices][['name', 'ingredients', 'description', 'thumbnail_url']].fillna("")
-    except Exception as e:
-        print(f"Error in get_recommendations: {e}")
-        # Return empty DataFrame with correct columns as fallback
-        return pd.DataFrame(columns=['name', 'ingredients', 'description', 'thumbnail_url'])
+    """Get recipe recommendations based on ingredients query"""
+    processed_query = ' '.join(query.lower().replace(',', ' ').split())
+    query_vec = tfidf.transform([processed_query])
+    sim_scores = cosine_similarity(query_vec, tfidf_matrix).flatten()
+    top_indices = sim_scores.argsort()[-top_n:][::-1]
+    
+    # Get the basic recipe data
+    results = df.iloc[top_indices][['name', 'ingredients', 'description', 'thumbnail_url', 'slug', 'has_instructions']].fillna("")
+    
+    # Convert to list of dictionaries for template
+    recipes = results.to_dict(orient="records")
+    
+    # Add instructions to each recipe
+    for recipe in recipes:
+        if recipe['has_instructions']:
+            recipe['instructions'] = get_recipe_instructions(recipe['slug'])
+        else:
+            recipe['instructions'] = None
+    
+    return recipes
 
-
-# Routes
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         user_input = request.form['ingredients']
-        results = get_recommendations(user_input)
-        return render_template('results.html', recommendations=results)
+        recommendations = get_recommendations(user_input)
+        return render_template('results.html', recommendations=recommendations)
     return render_template('index.html')
 
 if __name__ == '__main__':
