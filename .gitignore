@@ -1,8 +1,7 @@
 .venv/
 __pycache__/
 *.pyc
-*.pkl
 *.db
 *.csv
+!recipes_with_ingredients_and_tags.csv
 **/*.csv
-*.pkl
