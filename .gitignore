@@ -8,3 +8,5 @@ __pycache__/
 
 # Men spåra just denna fil
 !recipes_with_ingredients_and_tags.csv
+.env
+.env.*
