@@ -2,6 +2,9 @@
 __pycache__/
 *.pyc
 *.db
+# Ignorera alla csv-filer i hela projektet
 *.csv
-!recipes_with_ingredients_and_tags.csv
 **/*.csv
+
+# Men spåra just denna fil
+!recipes_with_ingredients_and_tags.csv
