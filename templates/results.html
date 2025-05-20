@@ -23,6 +23,17 @@
         .pagination button.active { background: #388e3c; }
         .back-link { display: inline-block; margin-top: 20px; color: #4CAF50; text-decoration: none; }
         .back-link:hover { text-decoration: underline; }
+        
+        /* Chatbot Styles */
+        #chat-container { margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px; }
+        #chat-messages { height: 300px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; padding: 10px; }
+        .chat-message { margin: 8px 0; padding: 10px; border-radius: 4px; }
+        .user-message { background: #e3f2fd; margin-left: 20%; }
+        .bot-message { background: #f5f5f5; margin-right: 20%; }
+        #chat-input { display: flex; gap: 10px; }
+        #user-input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 4px; }
+        #send-btn { padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        #send-btn:hover { background: #45a049; }
     </style>
     <script>
         let currentPage = 0;
@@ -36,6 +47,42 @@
             });
             currentPage = page;
         }
+
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const messagesDiv = document.getElementById('chat-messages');
+            
+            // Show user message
+            messagesDiv.innerHTML += `
+                <div class="chat-message user-message">
+                    <strong>You:</strong> ${input.value}
+                </div>
+            `;
+            
+            // Send to backend
+            fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: input.value})
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Show bot response
+                messagesDiv.innerHTML += `
+                    <div class="chat-message bot-message">
+                        <strong>ChefBot:</strong> ${data.response}
+                    </div>
+                `;
+                input.value = '';
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        }
+
+        // Handle Enter key
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+
         window.onload = function() {
             showPage(0);
         }
@@ -43,7 +90,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Top 10 recipes with these ingredients:</h1>
+        <h1>Top Recipes Matching Your Ingredients</h1>
         <ul class="recipe-list">
             {% for row in recommendations %}
             <li class="recipe-item">
@@ -54,16 +101,12 @@
                     <div class="recipe-info">
                         <div class="recipe-name">{{ row.name }}</div>
                         <div class="ingredients"><strong>Ingredients:</strong> {{ row.ingredients }}</div>
-                        {% if row.description %}
-                            <div class="description">{{ row.description }}</div>
-                        {% endif %}
                     </div>
                 </div>
                 
-                <!-- Display instructions or message if missing -->
                 {% if row.instructions %}
                     <div class="instructions">
-                        <h3>Instructions:</h3>
+                        <h3>Cooking Instructions</h3>
                         <ol>
                             {% for step in row.instructions %}
                                 <li>{{ step }}</li>
@@ -72,18 +115,29 @@
                     </div>
                 {% else %}
                     <div class="missing-instructions">
-                        <p>Detailed instructions are not available for this recipe.</p>
+                        <p>⚠️ Instructions not available for this recipe</p>
                     </div>
                 {% endif %}
             </li>
             {% endfor %}
         </ul>
+        
         <div class="pagination">
             {% for idx in range(recommendations|length) %}
                 <button onclick="showPage({{ idx }})">{{ idx+1 }}</button>
             {% endfor %}
         </div>
-        <a href="/" class="back-link">Back to search</a>
+
+        <div id="chat-container">
+            <h3>Recipe Assistant</h3>
+            <div id="chat-messages"></div>
+            <div id="chat-input">
+                <input type="text" id="user-input" placeholder="Ask me about substitutions, cooking tips, or meal ideas...">
+                <button id="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+        <a href="/" class="back-link">← Back to Search</a>
     </div>
 </body>
 </html>
