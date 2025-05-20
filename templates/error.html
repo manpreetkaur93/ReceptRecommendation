@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f6f6; margin: 0; }
+        .container { max-width: 600px; margin: 60px auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 16px #0001; padding: 40px; }
+        h1 { color: #dc3545; }
+        .error-message { color: #666; margin-top: 20px; }
+        .back-link { display: inline-block; margin-top: 20px; color: #4CAF50; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>❌ Error Occurred</h1>
+        <div class="error-message">
+            {{ error }}
+        </div>
+        <a href="/" class="back-link">← Back to Search</a>
+    </div>
+</body>
+</html>
