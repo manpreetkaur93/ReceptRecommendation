@@ -65,9 +65,9 @@ def index():
                 query=user_input
             )
         except Exception as e:
-            app.logger.error(f"Error in index route: {str(e)}")
             return render_template('error.html', error=str(e))
     return render_template('index.html')
+
 
 @app.route('/chat', methods=['POST'])
 def handle_chat():
@@ -82,6 +82,7 @@ def handle_chat():
     except Exception as e:
         app.logger.error(f"Chat error: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
+
 
 # ---- HJÄLPFUNKTIONER ---- #
 def get_recipe_instructions(slug):

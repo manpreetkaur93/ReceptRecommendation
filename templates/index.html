@@ -3,29 +3,174 @@
 <head>
     <title>Recipe Recommender</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f6f6; margin: 0; }
-        .container { max-width: 600px; margin: 60px auto; background: #fff; border-radius: 8px; box-shadow: 0 4px 16px #0001; padding: 40px; }
-        h1 { color: #4CAF50; }
-        .input-row { display: flex; gap: 10px; }
-        input[type="text"] { flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #ccc; }
-        button { padding: 12px 24px; border: none; border-radius: 4px; background: #4CAF50; color: #fff; font-size: 1rem; cursor: pointer; }
-        button:hover { background: #388e3c; }
-        .info { color: #666; margin-top: 16px; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: #f8f9fa; 
+            margin: 0; 
+            color: #333;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 40px auto; 
+            background: #fff; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08); 
+            padding: 40px;
+        }
+        h1 { 
+            color: #28a745; 
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+        }
+        .input-row { 
+            display: flex; 
+            gap: 15px; 
+            margin-bottom: 25px;
+        }
+        input[type="text"] { 
+            flex: 1; 
+            padding: 14px; 
+            border: 2px solid #e9ecef; 
+            border-radius: 8px; 
+            font-size: 1rem;
+        }
+        button { 
+            padding: 14px 28px; 
+            border: none; 
+            border-radius: 8px; 
+            background: #28a745; 
+            color: #fff; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            transition: all 0.3s;
+        }
+        button:hover { 
+            background: #218838; 
+            transform: translateY(-1px);
+        }
+        .info { 
+            color: #6c757d; 
+            margin-top: 20px; 
+            line-height: 1.6;
+        }
+        
+        /* Chatbot Styles */
+        #chat-container { 
+            margin-top: 40px; 
+            border-top: 2px solid #e9ecef; 
+            padding-top: 30px;
+        }
+        #chat-messages { 
+            height: 300px; 
+            overflow-y: auto; 
+            margin-bottom: 20px; 
+            border: 2px solid #e9ecef; 
+            border-radius: 8px; 
+            padding: 15px; 
+            background: #f8f9fa;
+        }
+        .chat-message { 
+            margin: 12px 0; 
+            padding: 12px; 
+            border-radius: 8px; 
+            max-width: 80%;
+        }
+        .user-message { 
+            background: #e3f2fd; 
+            margin-left: auto; 
+            border: 1px solid #bbdefb;
+        }
+        .bot-message { 
+            background: #f1f3f5; 
+            margin-right: auto; 
+            border: 1px solid #dee2e6;
+        }
+        #chat-input { 
+            display: flex; 
+            gap: 12px;
+        }
+        #user-input { 
+            flex: 1; 
+            padding: 14px; 
+            border: 2px solid #e9ecef; 
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Recipe Recommender</h1>
+        <h1>🍳 Smart Recipe Finder</h1>
         <form method="POST">
             <div class="input-row">
-                <input type="text" name="ingredients" placeholder="e.g., chicken, rice, soy sauce" required>
+                <input type="text" name="ingredients" placeholder="What's in your fridge? e.g. chicken, rice, soy sauce" required>
                 <button type="submit">Find Recipes</button>
             </div>
         </form>
         <div class="info">
-            Enter ingredients separated by commas. <br>
-            <strong>Example:</strong> chicken, rice, soy sauce
+            <strong>Pro tip:</strong> Separate ingredients with commas. Try our AI chef below for cooking help!
+        </div>
+
+        <!-- Chatbot Section -->
+        <div id="chat-container">
+            <h3>👨🍳 Virtual Chef Assistant</h3>
+            <div id="chat-messages"></div>
+            <div id="chat-input">
+                <input type="text" id="user-input" placeholder="Ask about substitutions, cooking tips, or meal ideas...">
+                <button id="send-btn" onclick="sendMessage()">Send</button>
+            </div>
         </div>
     </div>
-</body>
+
+        <script>
+        let currentPage = 0;
+        function showPage(page) {
+            const items = document.querySelectorAll('.recipe-item');
+            items.forEach((item, idx) => {
+                item.style.display = (idx === page) ? 'flex' : 'none';
+            });
+            document.querySelectorAll('.pagination button').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === page);
+            });
+            currentPage = page;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const messagesDiv = document.getElementById('chat-messages');
+            
+            // Show user message
+            messagesDiv.innerHTML += `
+                <div class="chat-message user-message">
+                    <strong>You:</strong> ${input.value}
+                </div>
+            `;
+            
+            // Send to backend
+            fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: input.value})
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Show bot response
+                messagesDiv.innerHTML += `
+                    <div class="chat-message bot-message">
+                        <strong>ChefBot:</strong> ${data.response}
+                    </div>
+                `;
+                input.value = '';
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        }
+
+        // Handle Enter key
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+
+        window.onload = function() {
+            showPage(0);
+        }
+    </script>
 </html>

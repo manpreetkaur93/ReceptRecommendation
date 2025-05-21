@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ recipe.name }}</title>
+    <style>
+        /* Anpassa stilar efter behov */
+        .recipe-detail { max-width: 800px; margin: 40px auto; }
+        .recipe-image { max-width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="recipe-detail">
+        <h1>{{ recipe.name }}</h1>
+        {% if recipe.thumbnail_url %}
+            <img src="{{ recipe.thumbnail_url }}" class="recipe-image">
+        {% endif %}
+        <h2>Ingredienser</h2>
+        <p>{{ recipe.ingredients }}</p>
+        <a href="/">← Tillbaka till sök</a>
+    </div>
+</body>
+</html>
