@@ -45,7 +45,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🍴 Hittade Recept</h1>
+        <h1>🍴 Matched Recipes</h1>
         <ul class="recipe-list">
             {% for row in recommendations %}
             <li class="recipe-item">
@@ -56,12 +56,12 @@
                     <div class="recipe-info">
                         <div class="recipe-name">{{ row.name }}</div>
                         <div class="ingredients">
-                            <strong>Ingredienser:</strong> 
+                            <strong>Ingredients:</strong> 
                             {{ row.ingredients }}
                         </div>
                         {% if row.instructions %}
                             <div class="instructions">
-                                <h3>👩🍳 Tillagningsinstruktioner</h3>
+                                <h3>👩🍳 Instructions</h3>
                                 <ol>
                                     {% for step in row.instructions %}
                                         <li>{{ step }}</li>
@@ -70,7 +70,7 @@
                             </div>
                         {% else %}
                             <div class="missing-instructions">
-                                <p>⚠️ Instruktioner saknas för detta recept</p>
+                                <p>⚠️ missing-instructions for this recipe</p>
                             </div>
                         {% endif %}
                     </div>
@@ -78,8 +78,6 @@
             </li>
             {% endfor %}
         </ul>
-        
-        <!-- Paginering och chatbot förblir som tidigare -->
     </div>
 </body>
 </html>
